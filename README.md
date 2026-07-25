@@ -63,5 +63,25 @@ ordinary Tailwind utilities (`bg-brand-600`, `text-ink-500`, `shadow-lift`).
   shareable and survive a refresh.
 - Both forms validate client-side and render a success state. Nothing is transmitted — the résumé
   input records only the filename.
-- Deep links need an SPA rewrite in production (all paths → `index.html`). Vite's dev server and
-  `npm run preview` already do this; configure it on your host for `dist/`.
+- Deep links are handled in production by `not_found_handling: "single-page-application"` in
+  [wrangler.jsonc](wrangler.jsonc). Vite's dev server and `npm run preview` do the same locally.
+
+## Deployment (Cloudflare Workers)
+
+Deployed as a static-assets-only Worker — no `main` entry, Cloudflare just serves `dist/`.
+
+| Cloudflare field | Value              |
+| ---------------- | ------------------ |
+| Build command    | `npm run build`    |
+| Deploy command   | `npx wrangler deploy` |
+
+### Do not remove the `@emnapi/*` devDependencies
+
+`@emnapi/core`, `@emnapi/runtime` and `@emnapi/wasi-threads` are listed as devDependencies but
+nothing imports them. They are there to work around an npm bug: `@tailwindcss/oxide-wasm32-wasi`
+declares them as dependencies, but npm prunes them from `package-lock.json` on some platforms.
+That leaves the lockfile internally inconsistent, and `npm ci` — which is what Cloudflare runs —
+fails with `Missing: @emnapi/runtime@… from lock file`.
+
+Declaring them directly forces proper top-level lockfile entries. If you remove them, regenerate
+the lockfile and confirm `npm ci` still exits 0 before pushing.
