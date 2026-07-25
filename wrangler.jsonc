@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mithhi-solutions-website",
+  "compatibility_date": "2026-07-25",
+  // Static-assets-only Worker: no "main" entry, Cloudflare just serves ./dist.
+  "assets": {
+    "directory": "./dist",
+    // Rewrites unknown paths to index.html so deep links like /jobs/:slug work.
+    "not_found_handling": "single-page-application"
+  }
+}
