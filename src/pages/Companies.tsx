@@ -15,7 +15,7 @@ export function Companies() {
       <section className="border-b border-ink-200 bg-ink-50">
         <div className="container-page py-10 lg:py-14">
           <h1 className="text-3xl font-extrabold tracking-tight lg:text-4xl">
-            Teams hiring on Mithhi
+            Teams hiring on Mitthi Solutions
           </h1>
           <p className="mt-2.5 max-w-2xl text-base leading-relaxed text-ink-600">
             Every company here has been verified — we confirm the role is real, the budget is

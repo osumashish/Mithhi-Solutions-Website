@@ -1,3 +1,7 @@
+/**
+ * PostAJob — renamed to "Post a Requirement" in Mitthi Solutions branding.
+ * The underlying route /post-a-job is preserved to avoid broken links.
+ */
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { CheckCircle2, Sparkles } from 'lucide-react'
@@ -193,10 +197,10 @@ export function PostAJob() {
           <div className="max-w-3xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/20">
               <Sparkles className="size-3.5 text-brand-200" aria-hidden="true" />
-              680 teams hire here
+              50+ clients served · 680 teams hire here
             </span>
             <h1 className="mt-6 font-display text-4xl leading-tight font-extrabold tracking-tight text-white lg:text-5xl">
-              Post a role, meet candidates who already want it
+              Post a requirement, meet candidates who already want it
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-ink-300">
               Because every listing shows its salary band and honest detail, the people who apply
@@ -456,8 +460,8 @@ export function PostAJob() {
                     className="mt-0.5 size-4.5 shrink-0 cursor-pointer rounded border-ink-300 accent-brand-600"
                   />
                   <span className="text-sm leading-relaxed text-ink-700">
-                    We agree to Mithhi's four hiring commitments, and understand our listing can be
-                    removed if we break them.
+                    We agree to Mitthi Solutions' four hiring commitments, and understand our listing
+                    can be removed if we break them.
                   </span>
                 </label>
                 {errors.agreed && <p className="mt-2 text-xs text-red-600">{errors.agreed}</p>}
