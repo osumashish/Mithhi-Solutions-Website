@@ -7,6 +7,12 @@ interface LogoProps {
   className?: string
 }
 
+/**
+ * Mitthi Solutions logo
+ *
+ * Uses the official MS monogram image mark as-is, paired with the
+ * "mitthi solutions · SERVING EXCELLENCE" wordmark in the brand colours.
+ */
 export function Logo({ tone = 'dark', className }: LogoProps) {
   return (
     <Link
@@ -14,44 +20,54 @@ export function Logo({ tone = 'dark', className }: LogoProps) {
       aria-label="Mitthi Solutions — home"
       className={cn('group inline-flex items-center gap-2.5', className)}
     >
-      {/* Brand mark — "M" monogram in brand-indigo tile */}
-      <span className="relative grid size-9 shrink-0 place-items-center rounded-xl bg-brand-600 shadow-sm transition-transform duration-300 group-hover:scale-105">
-        <svg viewBox="0 0 24 24" className="size-5 text-white" aria-hidden="true">
-          <path
-            d="M4 17V8l8-4 8 4v9"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.1"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M9 17V12l3-2 3 2v5"
-            fill="currentColor"
-            stroke="currentColor"
-            strokeWidth="0.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
+      {/* Official MS monogram image mark */}
+      <span className="relative shrink-0 transition-transform duration-300 group-hover:scale-105">
+        <img
+          src="/mitthi-logo-mark.jpg"
+          alt=""
+          aria-hidden="true"
+          className={cn(
+            'h-10 w-10 object-contain',
+            /* On dark backgrounds the white JPG background is visible — add a
+               subtle rounded white tile so it always sits cleanly. */
+            tone === 'light'
+              ? 'rounded-lg bg-white/10 p-0.5'
+              : 'rounded-lg',
+          )}
+        />
       </span>
 
+      {/* Wordmark — "mitthi" in dark navy, "solutions" in vivid blue */}
       <span className="flex flex-col leading-none">
-        <span
-          className={cn(
-            'font-display text-[0.9375rem] font-extrabold tracking-tight',
-            tone === 'light' ? 'text-white' : 'text-ink-900',
-          )}
-        >
-          Mitthi
+        <span className="flex items-baseline gap-1">
+          <span
+            className={cn(
+              'font-display text-[1rem] font-extrabold tracking-tight',
+              tone === 'light' ? 'text-white' : 'text-[#162163]',
+            )}
+          >
+            mitthi
+          </span>
+          <span
+            className={cn(
+              'font-display text-[1rem] font-extrabold tracking-tight',
+              tone === 'light' ? 'text-brand-300' : 'text-brand-600',
+            )}
+          >
+            solutions
+          </span>
         </span>
+
+        {/* "SERVING EXCELLENCE" tagline with decorative dashes */}
         <span
           className={cn(
-            'text-[0.6875rem] font-semibold tracking-[0.14em] uppercase',
-            tone === 'light' ? 'text-brand-200' : 'text-brand-600',
+            'flex items-center gap-1 text-[0.5rem] font-semibold tracking-[0.22em] uppercase',
+            tone === 'light' ? 'text-brand-200/80' : 'text-ink-400',
           )}
         >
-          Solutions
+          <span aria-hidden="true" className="h-px w-3 bg-current inline-block" />
+          Serving Excellence
+          <span aria-hidden="true" className="h-px w-3 bg-current inline-block" />
         </span>
       </span>
     </Link>

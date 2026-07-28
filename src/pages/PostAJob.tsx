@@ -187,7 +187,7 @@ export function PostAJob() {
       <section className="relative overflow-hidden bg-ink-950 text-white">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_90%_at_80%_0%,#4229dd_0%,transparent_55%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_90%_at_80%_0%,#1d4ed8_0%,transparent_55%)]"
         />
         <div
           aria-hidden="true"

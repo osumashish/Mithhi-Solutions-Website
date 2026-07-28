@@ -71,7 +71,7 @@ export function About() {
       <section className="relative overflow-hidden bg-ink-950 text-white">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_90%_at_20%_0%,#3723b2_0%,transparent_55%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(110%_90%_at_20%_0%,#162163_0%,transparent_55%)]"
         />
         <div
           aria-hidden="true"

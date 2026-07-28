@@ -157,7 +157,7 @@ function Hero({ onOpenModal }: { onOpenModal: (t: ModalType) => void }) {
       {/* Layered gradient + dot texture backdrop */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_15%_0%,#3723b2_0%,transparent_55%),radial-gradient(90%_80%_at_100%_10%,#4f39f6_0%,transparent_50%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_15%_0%,#162163_0%,transparent_55%),radial-gradient(90%_80%_at_100%_10%,#2563eb_0%,transparent_50%)]"
       />
       <div
         aria-hidden="true"
@@ -626,7 +626,7 @@ function CallToAction({ onOpenModal }: { onOpenModal: (t: ModalType) => void }) 
       <div className="relative overflow-hidden rounded-4xl bg-ink-950 px-6 py-14 text-center sm:px-12 lg:py-20">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_100%_at_50%_0%,#4229dd_0%,transparent_60%)]"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_100%_at_50%_0%,#1d4ed8_0%,transparent_60%)]"
         />
         <div
           aria-hidden="true"
