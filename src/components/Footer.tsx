@@ -1,159 +1,166 @@
-import { Link } from 'react-router-dom'
-import { Mail, MapPin, Phone } from 'lucide-react'
-import { Logo } from './Logo'
-import { CATEGORIES } from '@/types'
+import { Mail, Phone, MapPin, Globe, MessageCircle, Share2, Camera } from 'lucide-react'
 
-// lucide-react v1 no longer ships brand marks, so these two are inlined.
-function LinkedInIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
-      <path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6.5 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.5c0-1.4-.03-3.2-1.95-3.2-1.95 0-2.25 1.52-2.25 3.1V21h-4V9Z" />
-    </svg>
-  )
-}
+const services = [
+  'Executive Search', 'Specialized Recruitment', 'Bulk Hiring',
+  'Contract Staffing', 'HR Consulting', 'Campus Hiring',
+]
 
-function XIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" className="size-4" aria-hidden="true">
-      <path d="M17.53 3h3.2l-6.99 7.99L21.75 21h-6.4l-4.2-5.5L6.3 21H3.1l7.28-8.32L2.5 3h6.55l3.9 5.15L17.53 3Zm-1.12 16h1.77L7.03 4.75H5.13L16.41 19Z" />
-    </svg>
-  )
-}
+const quickLinks = [
+  { label: 'Services', href: '#services' },
+  { label: 'Why Choose Us', href: '#why-us' },
+  { label: 'Our Process', href: '#process' },
+  { label: 'Industries', href: '#industries' },
+  { label: 'Testimonials', href: '#testimonials' },
+  { label: 'Contact Us', href: '#contact' },
+]
 
-const columns = [
-  {
-    title: 'For candidates',
-    links: [
-      { label: 'Browse jobs', to: '/jobs' },
-      { label: 'Remote roles', to: '/jobs?mode=Remote' },
-      { label: 'Internships', to: '/jobs?type=Internship' },
-      { label: 'Companies', to: '/companies' },
-    ],
-  },
-  {
-    title: 'For employers',
-    links: [
-      { label: 'Post a requirement', to: '/post-a-job' },
-      { label: 'Pricing', to: '/post-a-job' },
-      { label: 'Hiring guides', to: '/about' },
-      { label: 'Talk to us', to: '/about' },
-    ],
-  },
-  {
-    title: 'Company',
-    links: [
-      { label: 'About Mitthi', to: '/about' },
-      { label: 'Careers', to: '/jobs' },
-      { label: 'Privacy', to: '/about' },
-      { label: 'Terms', to: '/about' },
-    ],
-  },
+const socials = [
+  { Icon: Globe, href: '#', label: 'LinkedIn' },
+  { Icon: MessageCircle, href: '#', label: 'Twitter' },
+  { Icon: Share2, href: '#', label: 'Facebook' },
+  { Icon: Camera, href: '#', label: 'Instagram' },
 ]
 
 export function Footer() {
+  const scrollTo = (href: string) => {
+    const el = document.querySelector(href)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
+
   return (
-    <footer className="mt-auto border-t border-ink-800 bg-ink-950 text-ink-400">
-      <div className="container-page py-14 lg:py-18">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:gap-8">
-          {/* Brand + contact block */}
-          <div className="max-w-sm">
-            <Logo tone="light" />
-            <p className="mt-4 text-sm leading-relaxed">
-              Mitthi Solutions connects ambitious professionals with leading organisations. We
-              make hiring transparent, candidate-friendly and free of ghosting — holding employers
-              to a published standard.
-            </p>
+    <footer className="bg-brand-950 text-white">
+      {/* Main grid */}
+      <div className="container-page pt-16 pb-10">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
 
-            {/*
-             * CONTACT BLOCK
-             * Address, phone and email as requested.
-             * Phone and email are clickable (tel: / mailto:).
-             */}
-            <div className="mt-5 flex flex-col gap-2.5 text-sm">
-              {/* Address */}
-              <span className="flex items-start gap-2">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-brand-400" aria-hidden="true" />
-                <span>Mitthi Solutions Pvt Ltd, Surat, Gujarat</span>
+          {/* Brand column */}
+          <div className="lg:col-span-1">
+            <a
+              href="#"
+              onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              className="group inline-flex items-center gap-3"
+            >
+              <img
+                src="/mitthi-logo-mark.jpg"
+                alt=""
+                aria-hidden="true"
+                className="h-11 w-11 rounded-xl object-contain bg-white/10 p-0.5"
+              />
+              <span className="flex flex-col leading-tight">
+                <span className="flex items-baseline gap-1">
+                  <span className="font-display text-[1.05rem] font-extrabold tracking-tight text-white">mitthi</span>
+                  <span className="font-display text-[1.05rem] font-extrabold tracking-tight text-brand-300">solutions</span>
+                </span>
+                <span className="text-[0.5rem] font-semibold tracking-[0.2em] uppercase text-white/50">
+                  — Serving Excellence —
+                </span>
               </span>
-
-              {/* Mobile */}
-              <a
-                href="tel:+919545412385"
-                className="flex items-center gap-2 transition-colors hover:text-white"
-              >
-                <Phone className="size-4 shrink-0 text-brand-400" aria-hidden="true" />
-                +91-9545412385
-              </a>
-
-              {/* Email */}
-              <a
-                href="mailto:info@mitthisolutions.com"
-                className="flex items-center gap-2 transition-colors hover:text-white"
-              >
-                <Mail className="size-4 shrink-0 text-brand-400" aria-hidden="true" />
-                info@mitthisolutions.com
-              </a>
+            </a>
+            <p className="mt-5 text-sm leading-relaxed text-white/65 max-w-xs">
+              Your trusted recruitment partner — connecting exceptional talent with
+              leading organisations across India with speed, precision, and care.
+            </p>
+            <div className="mt-6 flex gap-3">
+              {socials.map(({ Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="grid size-9 place-items-center rounded-lg bg-white/8 text-white/60 hover:bg-brand-600 hover:text-white transition-all duration-200"
+                >
+                  <Icon className="size-4" />
+                </a>
+              ))}
             </div>
           </div>
 
-          {columns.map((column) => (
-            <nav key={column.title} aria-label={column.title}>
-              <h3 className="font-display text-sm font-bold tracking-wide text-white uppercase">
-                {column.title}
-              </h3>
-              <ul className="mt-4 space-y-2.5 text-sm">
-                {column.links.map((link) => (
-                  <li key={link.label}>
-                    <Link to={link.to} className="transition-colors hover:text-white">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
-        </div>
-
-        <div className="mt-12 border-t border-ink-800 pt-8">
-          <h3 className="text-xs font-semibold tracking-[0.14em] text-ink-500 uppercase">
-            Popular categories
-          </h3>
-          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-            {CATEGORIES.map((category) => (
-              <li key={category}>
-                <Link
-                  to={`/jobs?category=${encodeURIComponent(category)}`}
-                  className="transition-colors hover:text-white"
-                >
-                  {category}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-10 flex flex-col-reverse items-start justify-between gap-5 border-t border-ink-800 pt-8 text-sm sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} Mitthi Solutions Pvt Ltd. All rights reserved.</p>
-          <div className="flex items-center gap-2">
-            <a
-              href="https://www.linkedin.com"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="Mitthi Solutions on LinkedIn"
-              className="grid size-9 place-items-center rounded-lg ring-1 ring-ink-800 transition-colors hover:bg-ink-800 hover:text-white"
-            >
-              <LinkedInIcon />
-            </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noreferrer noopener"
-              aria-label="Mitthi Solutions on X"
-              className="grid size-9 place-items-center rounded-lg ring-1 ring-ink-800 transition-colors hover:bg-ink-800 hover:text-white"
-            >
-              <XIcon />
-            </a>
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-xs font-bold tracking-[0.12em] uppercase text-white/40 mb-5">
+              Quick Links
+            </h3>
+            <ul className="space-y-3">
+              {quickLinks.map(link => (
+                <li key={link.href}>
+                  <button
+                    onClick={() => scrollTo(link.href)}
+                    className="text-sm text-white/65 hover:text-white transition-colors duration-200"
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
+
+          {/* Services */}
+          <div>
+            <h3 className="text-xs font-bold tracking-[0.12em] uppercase text-white/40 mb-5">
+              Our Services
+            </h3>
+            <ul className="space-y-3">
+              {services.map(service => (
+                <li key={service}>
+                  <span className="text-sm text-white/65">{service}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-xs font-bold tracking-[0.12em] uppercase text-white/40 mb-5">
+              Get In Touch
+            </h3>
+            <ul className="space-y-4">
+              <li>
+                <a
+                  href="tel:+919545412385"
+                  className="flex items-start gap-3 group"
+                >
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-600/30 text-brand-300 mt-0.5">
+                    <Phone className="size-4" />
+                  </span>
+                  <span className="text-sm text-white/65 group-hover:text-white transition-colors">
+                    +91-95454 12385
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:info@mitthisolutions.com"
+                  className="flex items-start gap-3 group"
+                >
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-600/30 text-brand-300 mt-0.5">
+                    <Mail className="size-4" />
+                  </span>
+                  <span className="text-sm text-white/65 group-hover:text-white transition-colors break-all">
+                    info@mitthisolutions.com
+                  </span>
+                </a>
+              </li>
+              <li>
+                <div className="flex items-start gap-3">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-brand-600/30 text-brand-300 mt-0.5">
+                    <MapPin className="size-4" />
+                  </span>
+                  <span className="text-sm text-white/65">
+                    Surat, Gujarat, India
+                  </span>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Divider + copyright */}
+        <div className="mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-white/35">
+            © {new Date().getFullYear()} Mitthi Solutions Pvt Ltd. All rights reserved.
+          </p>
+          <p className="text-xs text-white/35">
+            Serving Excellence | Surat, India
+          </p>
         </div>
       </div>
     </footer>

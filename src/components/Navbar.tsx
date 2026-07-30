@@ -1,147 +1,138 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
-import { Logo } from './Logo'
-import { Button } from './ui/Button'
-import { cn } from '@/lib/utils'
-import { LeadCaptureModal } from './LeadCaptureModal'
-import type { ModalType } from './LeadCaptureModal'
+import { Menu, X, Phone } from 'lucide-react'
 
 const links = [
-  { to: '/', label: 'Home' },
-  { to: '/jobs', label: 'Browse jobs' },
-  { to: '/companies', label: 'Companies' },
-  { to: '/about', label: 'About' },
+  { href: '#services', label: 'Services' },
+  { href: '#why-us', label: 'Why Us' },
+  { href: '#process', label: 'Process' },
+  { href: '#industries', label: 'Industries' },
+  { href: '#contact', label: 'Contact' },
 ]
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [modal, setModal] = useState<ModalType | null>(null)
-  const { pathname } = useLocation()
-
-  // Close the mobile sheet on navigation.
-  useEffect(() => setOpen(false), [pathname])
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    const handler = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', handler, { passive: true })
+    return () => window.removeEventListener('scroll', handler)
   }, [])
 
-  // Lock body scroll while the mobile sheet is open.
-  useEffect(() => {
-    document.body.style.overflow = open ? 'hidden' : ''
-    return () => {
-      document.body.style.overflow = ''
-    }
-  }, [open])
+  const handleNavClick = (href: string) => {
+    setOpen(false)
+    const el = document.querySelector(href)
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
 
   return (
-    <>
-      <header
-        className={cn(
-          'sticky top-0 z-50 border-b transition-all duration-300',
-          scrolled
-            ? 'border-ink-200/80 bg-white/85 backdrop-blur-lg'
-            : 'border-transparent bg-white',
-        )}
-      >
-        <div className="container-page flex h-17 items-center justify-between gap-4">
-          <Logo />
+    <header
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        scrolled
+          ? 'bg-white/95 backdrop-blur-md shadow-card border-b border-ink-100'
+          : 'bg-transparent'
+      }`}
+    >
+      <div className="container-page">
+        <div className="flex items-center justify-between h-18 lg:h-20">
+          {/* Logo */}
+          <a
+            href="#"
+            onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            className="group shrink-0 transition-transform duration-300 group-hover:scale-105"
+            aria-label="Mitthi Solutions — home"
+          >
+            {/* Full logo on dark (hero) — original colours on white */}
+            <img
+              src="/mitthi-logo.png"
+              alt="Mitthi Solutions"
+              className={`h-12 w-auto object-contain transition-all duration-300 ${
+                scrolled ? 'brightness-100' : 'brightness-0 invert'
+              }`}
+            />
+          </a>
 
-          <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
-            {links.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                end={link.to === '/'}
-                className={({ isActive }) =>
-                  cn(
-                    'rounded-lg px-3.5 py-2 text-[0.9375rem] font-medium transition-colors',
-                    isActive
-                      ? 'text-brand-700 bg-brand-50'
-                      : 'text-ink-600 hover:text-ink-900 hover:bg-ink-100',
-                  )
-                }
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-1">
+            {links.map(link => (
+              <button
+                key={link.href}
+                onClick={() => handleNavClick(link.href)}
+                className={`px-4 py-2 rounded-lg text-[0.9rem] font-semibold transition-colors ${
+                  scrolled
+                    ? 'text-ink-700 hover:text-brand-600 hover:bg-brand-50'
+                    : 'text-white/85 hover:text-white hover:bg-white/10'
+                }`}
               >
                 {link.label}
-              </NavLink>
+              </button>
             ))}
           </nav>
 
-          {/* Desktop CTA — "Submit Resume" for candidates, "Post a Requirement" for employers */}
-          <div className="hidden items-center gap-2 md:flex">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setModal('resume')}
+          {/* Desktop CTA */}
+          <div className="hidden lg:flex items-center gap-3">
+            <a
+              href="tel:+919545412385"
+              className={`inline-flex items-center gap-2 text-sm font-semibold transition-colors ${
+                scrolled ? 'text-ink-600 hover:text-brand-600' : 'text-white/80 hover:text-white'
+              }`}
             >
-              Submit Resume
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => setModal('requirement')}
+              <Phone className="size-4" />
+              +91-95454 12385
+            </a>
+            <button
+              onClick={() => handleNavClick('#contact')}
+              className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-blue transition-all duration-200 active:scale-95"
             >
-              Post a Requirement
-            </Button>
+              Hire Talent
+            </button>
           </div>
 
+          {/* Mobile menu toggle */}
           <button
             type="button"
-            onClick={() => setOpen((v) => !v)}
-            aria-expanded={open}
-            aria-controls="mobile-nav"
             aria-label={open ? 'Close menu' : 'Open menu'}
-            className="grid size-10 place-items-center rounded-lg text-ink-700 hover:bg-ink-100 md:hidden"
+            onClick={() => setOpen(!open)}
+            className={`lg:hidden grid size-10 place-items-center rounded-xl transition-colors ${
+              scrolled ? 'text-ink-700 hover:bg-ink-100' : 'text-white hover:bg-white/10'
+            }`}
           >
             {open ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
+      </div>
 
-        {open && (
-          <div
-            id="mobile-nav"
-            className="animate-fade-in border-t border-ink-200 bg-white md:hidden"
-          >
-            <nav aria-label="Mobile" className="container-page flex flex-col py-3">
-              {links.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  end={link.to === '/'}
-                  className={({ isActive }) =>
-                    cn(
-                      'rounded-lg px-3 py-3 text-base font-medium',
-                      isActive ? 'text-brand-700 bg-brand-50' : 'text-ink-700',
-                    )
-                  }
-                >
-                  {link.label}
-                </NavLink>
-              ))}
-              <div className="mt-3 flex flex-col gap-2 border-t border-ink-200 pt-4 pb-2">
-                <button
-                  type="button"
-                  onClick={() => { setOpen(false); setModal('resume') }}
-                  className="rounded-xl px-3 py-2 text-center text-[0.9375rem] font-semibold text-ink-700 ring-1 ring-ink-200 transition-colors hover:bg-ink-50"
-                >
-                  Submit Resume
-                </button>
-                <Button onClick={() => { setOpen(false); setModal('requirement') }}>
-                  Post a Requirement
-                </Button>
-              </div>
-            </nav>
+      {/* Mobile sheet */}
+      {open && (
+        <div className="lg:hidden bg-white/97 backdrop-blur-xl border-t border-ink-100 shadow-lift">
+          <div className="container-page py-5 space-y-1">
+            {links.map(link => (
+              <button
+                key={link.href}
+                onClick={() => handleNavClick(link.href)}
+                className="w-full text-left px-4 py-3 rounded-xl text-[0.95rem] font-semibold text-ink-800 hover:text-brand-600 hover:bg-brand-50 transition-colors"
+              >
+                {link.label}
+              </button>
+            ))}
+            <div className="pt-4 flex flex-col gap-3">
+              <a
+                href="tel:+919545412385"
+                className="inline-flex items-center gap-2 px-4 py-3 text-sm font-semibold text-ink-600"
+              >
+                <Phone className="size-4 text-brand-600" />
+                +91-95454 12385
+              </a>
+              <button
+                onClick={() => handleNavClick('#contact')}
+                className="w-full bg-brand-600 text-white px-5 py-3.5 rounded-xl text-sm font-bold"
+              >
+                Hire Talent Now
+              </button>
+            </div>
           </div>
-        )}
-      </header>
-
-      {/* Lead Capture Modals */}
-      {modal && (
-        <LeadCaptureModal type={modal} onClose={() => setModal(null)} />
+        </div>
       )}
-    </>
+    </header>
   )
 }

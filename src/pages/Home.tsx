@@ -1,696 +1,705 @@
-/**
- * Home page — Mitthi Solutions Talent Connect
- *
- * Modifications from reference site:
- * 1. "Post Requirement" and "Submit Resume" buttons open the LeadCaptureModal.
- * 2. Stats bar now includes "50+ Clients Served" (client-count stat).
- * 3. All brand text updated to "Mitthi Solutions".
- */
-
-import { useState } from 'react'
-import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
-  ArrowRight,
-  BadgeCheck,
-  BarChart3,
-  Briefcase,
-  Building2,
-  Code2,
-  FileText,
-  HeartHandshake,
-  LineChart,
-  MapPin,
-  Megaphone,
-  MessageSquare,
-  PenTool,
-  Search,
-  Send,
-  ShieldCheck,
-  Sparkles,
-  Users,
+  Users, Search, Briefcase, BarChart3, BookOpen, Award,
+  CheckCircle2, ArrowRight, Star, Zap, Shield, Globe,
+  HeartHandshake, TrendingUp, Phone, Mail, Upload,
+  ChevronDown, Building2, GraduationCap, Factory,
+  ShoppingBag, Stethoscope, Landmark, Truck, ChevronRight,
 } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
-import { JobCard } from '@/components/JobCard'
-import { LeadCaptureModal } from '@/components/LeadCaptureModal'
-import type { ModalType } from '@/components/LeadCaptureModal'
-import { jobs } from '@/data/jobs'
-import { companies } from '@/data/companies'
-import { CATEGORIES } from '@/types'
 
-/**
- * STATS — includes "50+ Clients Served" as specified.
- * All instances of the client-count stat use this value.
- */
+/* ─── Tiny hook: fires a one-shot callback when element enters viewport ─── */
+function useInView(threshold = 0.15) {
+  const ref = useRef<HTMLElement | null>(null)
+  const [visible, setVisible] = useState(false)
+  useEffect(() => {
+    if (!ref.current) return
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); obs.disconnect() } },
+      { threshold },
+    )
+    obs.observe(ref.current)
+    return () => obs.disconnect()
+  }, [threshold])
+  return { ref, visible }
+}
+
+/* ─── Reusable animated section wrapper ─── */
+function Section({ id, children, className = '', style }: { id?: string; children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
+  const { ref, visible } = useInView()
+  return (
+    <section
+      id={id}
+      ref={ref as React.RefObject<HTMLElement>}
+      style={style}
+      className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${className}`}
+    >
+      {children}
+    </section>
+  )
+}
+
+/* ─── Section heading helper ─── */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center gap-2 bg-brand-50 text-brand-700 px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4">
+      <span className="size-1.5 rounded-full bg-brand-600 inline-block" />
+      {children}
+    </span>
+  )
+}
+
+/* ─── DATA ─── */
 const stats = [
-  { value: '50+', label: 'Clients served', icon: Building2 },
-  { value: '2,400+', label: 'Open roles', icon: Briefcase },
-  { value: '91%', label: 'Get a reply', icon: MessageSquare },
-  { value: '18 days', label: 'Median time to offer', icon: LineChart },
+  { value: '50+', label: 'Clients Served', icon: Building2 },
+  { value: '500+', label: 'Successful Placements', icon: Users },
+  { value: '10+', label: 'Industry Verticals', icon: BarChart3 },
+  { value: '99%', label: 'Client Satisfaction', icon: Star },
 ]
 
-const categoryIcons = {
-  Engineering: Code2,
-  Design: PenTool,
-  'Data & AI': BarChart3,
-  Product: Briefcase,
-  Marketing: Megaphone,
-  'Customer Success': HeartHandshake,
-  Finance: LineChart,
-  People: Users,
-} as const
+const services = [
+  {
+    icon: Search,
+    title: 'Executive Search',
+    description: 'Senior leadership and C-suite recruitment with absolute confidentiality and precision.',
+    color: 'bg-brand-600',
+  },
+  {
+    icon: Users,
+    title: 'Specialized Recruitment',
+    description: 'Deep domain expertise across technical, finance, operations, and niche roles.',
+    color: 'bg-blue-500',
+  },
+  {
+    icon: Zap,
+    title: 'Bulk / Mass Hiring',
+    description: 'High-volume recruitment campaigns delivered on time without sacrificing quality.',
+    color: 'bg-indigo-500',
+  },
+  {
+    icon: Briefcase,
+    title: 'Contract Staffing',
+    description: 'Flexible short-term, project-based and contractual placement solutions.',
+    color: 'bg-violet-500',
+  },
+  {
+    icon: BookOpen,
+    title: 'HR Consulting',
+    description: 'Strategic HR advisory — policies, competency frameworks, and org design.',
+    color: 'bg-sky-500',
+  },
+  {
+    icon: GraduationCap,
+    title: 'Campus Hiring',
+    description: 'Fresh talent pipelines through structured campus engagement programs.',
+    color: 'bg-teal-500',
+  },
+]
 
-const categoryCounts: Record<string, string> = {
-  Engineering: '840 roles',
-  Design: '210 roles',
-  'Data & AI': '395 roles',
-  Product: '176 roles',
-  Marketing: '243 roles',
-  'Customer Success': '188 roles',
-  Finance: '132 roles',
-  People: '96 roles',
-}
+const whyUs = [
+  { icon: Zap, title: 'Speed & Precision', desc: 'Fast turnarounds with quality intact — we present interview-ready candidates.' },
+  { icon: Award, title: 'Deep Industry Expertise', desc: 'Sector-specific knowledge for precise matching across 10+ verticals.' },
+  { icon: CheckCircle2, title: 'Quality Over Quantity', desc: 'Pre-screened, rigorously assessed profiles — only the best reach you.' },
+  { icon: Shield, title: '360° Confidentiality', desc: 'Absolute discretion for sensitive and senior-level search mandates.' },
+  { icon: Globe, title: 'Pan-India Reach', desc: 'Extensive talent network across metros, tier-2 and emerging cities.' },
+  { icon: HeartHandshake, title: 'Post-Placement Support', desc: 'We stay invested beyond the offer letter — follow-up and retention support.' },
+]
 
 const steps = [
   {
-    icon: FileText,
-    title: 'Build one honest profile',
-    body: 'Tell us what you actually want to work on and what you need to be paid. No résumé keyword games — hiring teams see the real thing.',
+    number: '01',
+    icon: Phone,
+    title: 'Share Your Needs',
+    desc: 'Tell us about the role, team culture, and must-haves. A quick call is all it takes.',
   },
   {
+    number: '02',
     icon: Search,
-    title: 'See only roles that fit',
-    body: 'Every listing carries a real salary band, work mode and team size up front. If it is not a fit, you will know before you apply.',
+    title: 'We Source & Screen',
+    desc: 'Our team sources widely, evaluates rigorously, and shortlists only the strongest fits.',
   },
   {
-    icon: Send,
-    title: 'Apply and hear back',
-    body: 'Employers on Mitthi Solutions commit to responding within seven days. We track it publicly, and we remove the ones who do not.',
+    number: '03',
+    icon: Users,
+    title: 'You Interview',
+    desc: 'Meet only the candidates who genuinely fit — no resume dumps, no wasted time.',
+  },
+  {
+    number: '04',
+    icon: TrendingUp,
+    title: 'Sealed with Success',
+    desc: 'Offer, onboarding, and post-placement follow-up — we stay until you succeed.',
   },
 ]
 
-const promises = [
-  {
-    icon: BadgeCheck,
-    title: 'Salary bands, always',
-    body: 'No listing goes live without a published range. It is the first thing you want to know, so it is the first thing we show.',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Verified employers only',
-    body: 'We check every hiring team before their first post — real company, real role, real budget approved.',
-  },
-  {
-    icon: MessageSquare,
-    title: 'A reply within seven days',
-    body: 'Ghosting is the worst part of job hunting. Employers here agree to a response deadline, and we hold them to it.',
-  },
+const industries = [
+  { icon: Building2, label: 'IT & Technology' },
+  { icon: Landmark, label: 'Banking & Finance' },
+  { icon: Stethoscope, label: 'Healthcare & Pharma' },
+  { icon: Factory, label: 'Manufacturing' },
+  { icon: ShoppingBag, label: 'Retail & FMCG' },
+  { icon: GraduationCap, label: 'Education & EdTech' },
+  { icon: Truck, label: 'Logistics & Supply Chain' },
+  { icon: BarChart3, label: 'Consulting & Advisory' },
 ]
 
 const testimonials = [
   {
-    quote:
-      'I had been applying through the usual boards for four months with almost no replies. Three applications here, two interviews, one offer at a real raise.',
-    name: 'Ananya R.',
-    role: 'Backend Engineer → Keystone Financial',
-    initials: 'AR',
-    tile: 'bg-brand-600 text-white',
+    quote: 'Mitthi Solutions found us a VP of Engineering in 3 weeks — someone we had been struggling to find for 4 months. Exceptional quality and speed.',
+    author: 'Rahul Mehta',
+    role: 'CTO, TechCorp India',
+    rating: 5,
   },
   {
-    quote:
-      'Seeing the salary band before applying saved me weeks. I stopped wasting time on roles that were never going to work financially.',
-    name: 'Devansh M.',
-    role: 'Data Analyst → Cobalt Retail',
-    initials: 'DM',
-    tile: 'bg-emerald-600 text-white',
+    quote: 'Their understanding of our culture made all the difference. Every candidate they presented was a genuine fit — not just a resume match.',
+    author: 'Priya Sharma',
+    role: 'HR Director, FinServCo',
+    rating: 5,
   },
   {
-    quote:
-      'We filled two senior design roles in five weeks. The candidates arrived already understanding what the job was, which never happens.',
-    name: 'Priya S.',
-    role: 'Head of Design, Lumen Studio',
-    initials: 'PS',
-    tile: 'bg-amber-400 text-ink-900',
+    quote: 'From bulk hiring for our new branch to senior leadership roles, Mitthi has been our go-to partner. Reliable, professional, and always responsive.',
+    author: 'Ankit Joshi',
+    role: 'Founder, GrowthStartup',
+    rating: 5,
   },
 ]
 
-// ---------------------------------------------------------------------------
-// Hero section
-// ---------------------------------------------------------------------------
+/* ─── MAIN COMPONENT ─── */
+export function Home() {
+  const [hireForm, setHireForm] = useState({ name: '', company: '', phone: '', requirement: '' })
+  const [jobForm, setJobForm] = useState({ name: '', email: '', role: '', fileName: '' })
+  const [hireSubmitted, setHireSubmitted] = useState(false)
+  const [jobSubmitted, setJobSubmitted] = useState(false)
+  const heroRef = useRef<HTMLDivElement>(null)
 
-function Hero({ onOpenModal }: { onOpenModal: (t: ModalType) => void }) {
-  const navigate = useNavigate()
-  const [query, setQuery] = useState('')
-  const [location, setLocation] = useState('')
-
-  const onSubmit = (event: FormEvent) => {
-    event.preventDefault()
-    const params = new URLSearchParams()
-    if (query.trim()) params.set('q', query.trim())
-    if (location.trim()) params.set('location', location.trim())
-    navigate(`/jobs${params.toString() ? `?${params}` : ''}`)
+  const submitHire = (e: FormEvent) => {
+    e.preventDefault()
+    setHireSubmitted(true)
+  }
+  const submitJob = (e: FormEvent) => {
+    e.preventDefault()
+    setJobSubmitted(true)
   }
 
   return (
-    <section className="relative overflow-hidden bg-ink-950 text-white">
-      {/* Layered gradient + dot texture backdrop */}
+    <>
+      {/* ════════════════════════════════════════
+          1. HERO
+      ════════════════════════════════════════ */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_15%_0%,#162163_0%,transparent_55%),radial-gradient(90%_80%_at_100%_10%,#2563eb_0%,transparent_50%)]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 bg-dotted text-white/[0.07]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-brand-500/20 blur-3xl"
-      />
+        ref={heroRef}
+        className="relative min-h-screen flex flex-col justify-center overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #162163 0%, #1e3a8a 40%, #1d4ed8 75%, #2563eb 100%)' }}
+      >
+        {/* Dot texture */}
+        <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-30" />
 
-      <div className="container-page relative py-18 lg:py-26">
-        <div className="grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16">
-          <div className="animate-fade-up">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1.5 text-xs font-semibold ring-1 ring-white/20 backdrop-blur-sm">
-              <Sparkles className="size-3.5 text-brand-200" aria-hidden="true" />
-              412 new roles added this week
-            </span>
+        {/* Glow blobs */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-brand-600/20 blur-[120px]" />
+          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-400/15 blur-[100px]" />
+        </div>
 
-            <h1 className="mt-6 font-display text-4xl leading-[1.08] font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-              Find work worth
+        <div className="container-page relative z-10 pt-32 pb-24">
+          <div className="max-w-3xl mx-auto text-center">
+            {/* Label */}
+            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
+              <span className="inline-flex items-center gap-2.5 glass-card text-blue-200 text-xs font-bold tracking-widest uppercase px-5 py-2 rounded-full mb-8">
+                <span className="size-2 rounded-full bg-brand-400 animate-pulse-slow" />
+                Trusted Recruitment Partner · Surat, India
+              </span>
+            </div>
+
+            {/* Headline */}
+            <h1
+              className="animate-fade-up text-white font-display font-extrabold tracking-tight leading-[1.1]"
+              style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', animationDelay: '0.2s' }}
+            >
+              Building Great Teams,
               <br />
-              <span className="bg-gradient-to-r from-brand-200 via-white to-brand-200 bg-clip-text text-transparent">
-                doing.
+              <span className="text-transparent bg-clip-text"
+                style={{ backgroundImage: 'linear-gradient(90deg, #93c5fd, #60a5fa, #bfdbfe)' }}>
+                Shaping Great Careers
               </span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-300">
-              Mitthi Solutions lists roles with the salary band, work mode and team size
-              published up front — and employers who commit to replying inside a week.
+            {/* Subheading */}
+            <p
+              className="animate-fade-up mt-7 text-blue-200/90 leading-relaxed max-w-2xl mx-auto"
+              style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)', animationDelay: '0.35s' }}
+            >
+              Mitthi Solutions connects exceptional talent with leading organisations
+              across India — with speed, precision, and care that sets us apart.
             </p>
 
-            <form
-              onSubmit={onSubmit}
-              className="mt-9 rounded-2xl bg-white/95 p-2.5 shadow-lift backdrop-blur sm:rounded-full"
+            {/* CTAs */}
+            <div
+              className="animate-fade-up mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+              style={{ animationDelay: '0.5s' }}
             >
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <div className="flex flex-1 items-center gap-2.5 px-3">
-                  <Search className="size-5 shrink-0 text-ink-400" aria-hidden="true" />
-                  <input
-                    type="search"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Role, skill or company"
-                    aria-label="Role, skill or company"
-                    className="h-11 w-full min-w-0 bg-transparent text-[0.9375rem] text-ink-900 placeholder:text-ink-400 focus:outline-none"
-                  />
-                </div>
-                <span aria-hidden="true" className="hidden h-7 w-px bg-ink-200 sm:block" />
-                <div className="flex flex-1 items-center gap-2.5 px-3 sm:max-w-56">
-                  <MapPin className="size-5 shrink-0 text-ink-400" aria-hidden="true" />
-                  <input
-                    type="text"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    placeholder="City or remote"
-                    aria-label="City or remote"
-                    className="h-11 w-full min-w-0 bg-transparent text-[0.9375rem] text-ink-900 placeholder:text-ink-400 focus:outline-none"
-                  />
-                </div>
-                <Button type="submit" size="lg" className="sm:rounded-full">
-                  Search jobs
-                </Button>
-              </div>
-            </form>
-
-            <div className="mt-6 flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-ink-400">Popular:</span>
-              {['React', 'Product Manager', 'Remote', 'Internship'].map((term) => (
-                <Link
-                  key={term}
-                  to={`/jobs?q=${encodeURIComponent(term)}`}
-                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium ring-1 ring-white/15 transition-colors hover:bg-white/20"
-                >
-                  {term}
-                </Link>
-              ))}
+              <button
+                onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
+                className="group inline-flex items-center gap-2.5 bg-white text-brand-950 px-8 py-4 rounded-2xl text-base font-bold shadow-lift hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
+              >
+                <Briefcase className="size-5" />
+                I'm Looking to Hire
+                <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </button>
+              <button
+                onClick={() => document.querySelector('#contact-job')?.scrollIntoView({ behavior: 'smooth' })}
+                className="group inline-flex items-center gap-2.5 glass-card text-white px-8 py-4 rounded-2xl text-base font-bold hover:bg-white/15 transition-all duration-300"
+              >
+                <Search className="size-5" />
+                I Need a Job
+                <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+              </button>
             </div>
 
-            {/*
-             * PRIMARY LEAD-CAPTURE CTAs
-             * "Post a Requirement" (employers) and "Submit Your Resume" (candidates)
-             * — both open the shared LeadCaptureModal.
-             */}
-            <div className="mt-8 flex flex-wrap gap-3">
-              <button
-                type="button"
-                onClick={() => onOpenModal('requirement')}
-                className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white shadow-glow transition-all hover:bg-brand-700"
-              >
-                Post a Requirement
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenModal('resume')}
-                className="inline-flex items-center gap-2 rounded-full bg-white/10 px-6 py-2.5 text-sm font-semibold text-white ring-1 ring-white/20 transition-all hover:bg-white/20"
-              >
-                Submit Your Resume
-              </button>
+            {/* Scroll cue */}
+            <div className="animate-float mt-16 flex justify-center">
+              <div className="flex flex-col items-center gap-2 text-white/40">
+                <span className="text-xs tracking-widest uppercase">Scroll</span>
+                <ChevronDown className="size-5" />
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Floating preview card — signals what a listing looks like */}
-          <div className="animate-fade-up lg:animate-fade-in relative hidden lg:block">
-            <div className="relative rounded-4xl bg-white/[0.06] p-2 ring-1 ring-white/10 backdrop-blur-sm">
-              <div className="rounded-3xl bg-white p-6 shadow-lift">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold tracking-[0.14em] text-ink-400 uppercase">
-                    Live listing
-                  </span>
-                  <Badge tone="mint">Verified employer</Badge>
-                </div>
-
-                <div className="mt-5 flex items-start gap-4">
-                  <span
-                    aria-hidden="true"
-                    className="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-600 font-display text-sm font-bold text-white"
-                  >
-                    NL
-                  </span>
-                  <div>
-                    <h2 className="text-lg font-bold">Senior Frontend Engineer</h2>
-                    <p className="text-sm text-ink-500">Northwind Labs · Remote, India</p>
+        {/* Stats ribbon */}
+        <div className="relative z-10 border-t border-white/10">
+          <div className="container-page py-8">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-0 lg:divide-x lg:divide-white/10">
+              {stats.map(({ value, label, icon: Icon }) => (
+                <div key={label} className="text-center px-6">
+                  <p className="text-3xl sm:text-4xl font-display font-extrabold text-white">
+                    {value}
+                  </p>
+                  <div className="mt-1 flex items-center justify-center gap-1.5 text-blue-300 text-sm font-medium">
+                    <Icon className="size-4" />
+                    {label}
                   </div>
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
 
-                <dl className="mt-5 grid grid-cols-2 gap-3">
-                  {[
-                    { label: 'Salary band', value: '₹38–52 LPA' },
-                    { label: 'Work mode', value: 'Fully remote' },
-                    { label: 'Team size', value: '9 engineers' },
-                    { label: 'Reply within', value: '4 days' },
-                  ].map((item) => (
-                    <div key={item.label} className="rounded-xl bg-ink-50 px-3.5 py-2.5">
-                      <dt className="text-[0.6875rem] font-medium tracking-wide text-ink-500 uppercase">
-                        {item.label}
-                      </dt>
-                      <dd className="mt-0.5 text-sm font-bold text-ink-900">{item.value}</dd>
-                    </div>
-                  ))}
-                </dl>
+      {/* ════════════════════════════════════════
+          2. SERVICES
+      ════════════════════════════════════════ */}
+      <Section id="services" className="py-24 bg-ink-50">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <SectionLabel>What We Do</SectionLabel>
+            <h2 className="text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-ink-900">
+              End-to-End Recruitment Solutions
+            </h2>
+            <p className="mt-5 text-lg text-ink-500 leading-relaxed">
+              From first-time hires to senior leadership, we have the expertise
+              to find the right person for every role.
+            </p>
+          </div>
 
-                <div className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
-                  <Button as="link" to="/jobs/senior-frontend-engineer-northwind-labs" size="sm">
-                    View role
-                  </Button>
-                  <span className="text-xs text-ink-500">47 people applied</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {services.map(({ icon: Icon, title, description, color }) => (
+              <div
+                key={title}
+                className="group relative bg-white rounded-3xl p-8 shadow-card ring-1 ring-ink-100 hover:shadow-lift hover:-translate-y-1 transition-all duration-300"
+              >
+                <div className={`${color} inline-grid size-12 place-items-center rounded-2xl text-white shadow-sm mb-5`}>
+                  <Icon className="size-6" />
+                </div>
+                <h3 className="text-lg font-bold text-ink-900 mb-2">{title}</h3>
+                <p className="text-sm leading-relaxed text-ink-500">{description}</p>
+                <div className="mt-6 flex items-center gap-1 text-brand-600 text-sm font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                  Learn more <ArrowRight className="size-4" />
                 </div>
               </div>
-            </div>
-
-            <div
-              aria-hidden="true"
-              className="absolute -bottom-6 -left-8 rounded-2xl bg-white px-5 py-4 shadow-lift"
-            >
-              <p className="font-display text-2xl font-extrabold text-ink-900">18 days</p>
-              <p className="text-xs font-medium text-ink-500">median time to offer</p>
-            </div>
+            ))}
           </div>
         </div>
-      </div>
-    </section>
-  )
-}
+      </Section>
 
-// ---------------------------------------------------------------------------
-// Stats — "50+ Clients Served" is the first stat (key client-count stat).
-// ---------------------------------------------------------------------------
-
-function Stats() {
-  return (
-    <section aria-label="Platform statistics" className="border-b border-ink-200 bg-white">
-      <div className="container-page grid grid-cols-2 gap-x-6 gap-y-9 py-12 lg:grid-cols-4 lg:py-14">
-        {stats.map((stat) => (
-          <div key={stat.label} className="flex items-start gap-3.5">
-            <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
-              <stat.icon className="size-5" aria-hidden="true" />
-            </span>
-            <div>
-              <p className="font-display text-2xl font-extrabold text-ink-900 lg:text-3xl">
-                {stat.value}
+      {/* ════════════════════════════════════════
+          3. WHY CHOOSE US
+      ════════════════════════════════════════ */}
+      <Section id="why-us" className="py-24 bg-white">
+        <div className="container-page">
+          <div className="lg:grid lg:grid-cols-[1fr_1.2fr] lg:gap-20 items-center">
+            {/* Left */}
+            <div className="max-w-lg">
+              <SectionLabel>Why Choose Mitthi</SectionLabel>
+              <h2 className="text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-ink-900 leading-tight">
+                Recruitment Done{' '}
+                <span className="text-brand-600">Right.</span>
+              </h2>
+              <p className="mt-6 text-lg text-ink-500 leading-relaxed">
+                We are not a resume-passing agency. We invest time to understand
+                your culture, your goals, and your people — and then we deliver.
               </p>
-              <p className="mt-0.5 text-sm text-ink-500">{stat.label}</p>
+
+              {/* Blue CTA card */}
+              <div className="mt-10 rounded-3xl p-7 text-white"
+                style={{ background: 'linear-gradient(135deg, #162163, #2563eb)' }}>
+                <p className="text-xl font-bold leading-snug mb-4">
+                  Ready to hire smarter?
+                </p>
+                <p className="text-blue-200 text-sm leading-relaxed mb-6">
+                  Share your requirement and get curated profiles within 48 hours.
+                </p>
+                <button
+                  onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="inline-flex items-center gap-2 bg-white text-brand-700 px-6 py-3 rounded-xl text-sm font-bold hover:bg-brand-50 transition-colors"
+                >
+                  Post a Requirement <ArrowRight className="size-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right: feature grid */}
+            <div className="mt-14 lg:mt-0 grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {whyUs.map(({ icon: Icon, title, desc }) => (
+                <div
+                  key={title}
+                  className="flex gap-4 bg-ink-50 rounded-2xl p-5 hover:bg-brand-50 transition-colors duration-300 group"
+                >
+                  <div className="shrink-0 grid size-10 place-items-center rounded-xl bg-brand-100 text-brand-600 group-hover:bg-brand-600 group-hover:text-white transition-all duration-300">
+                    <Icon className="size-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-ink-900 text-sm mb-1">{title}</p>
+                    <p className="text-xs leading-relaxed text-ink-500">{desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Shared section heading
-// ---------------------------------------------------------------------------
-
-function SectionHeading({
-  eyebrow,
-  title,
-  body,
-  action,
-}: {
-  eyebrow: string
-  title: string
-  body?: string
-  action?: { to: string; label: string }
-}) {
-  return (
-    <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
-      <div className="max-w-2xl">
-        <p className="text-xs font-bold tracking-[0.14em] text-brand-600 uppercase">{eyebrow}</p>
-        <h2 className="mt-2.5 text-3xl font-extrabold tracking-tight lg:text-4xl">{title}</h2>
-        {body && <p className="mt-3.5 text-base leading-relaxed text-ink-600">{body}</p>}
-      </div>
-      {action && (
-        <Link
-          to={action.to}
-          className="group inline-flex shrink-0 items-center gap-1.5 text-[0.9375rem] font-semibold text-brand-700 hover:text-brand-800"
-        >
-          {action.label}
-          <ArrowRight
-            className="size-4 transition-transform group-hover:translate-x-0.5"
-            aria-hidden="true"
-          />
-        </Link>
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Category grid
-// ---------------------------------------------------------------------------
-
-function Categories() {
-  return (
-    <section className="bg-ink-50 py-18 lg:py-22">
-      <div className="container-page">
-        <SectionHeading
-          eyebrow="Browse by function"
-          title="Where do you want to work?"
-          body="Eight functions, each with roles from teams we have actually vetted."
-        />
-        <ul className="mt-10 grid grid-cols-2 gap-3.5 md:grid-cols-4">
-          {CATEGORIES.map((category) => {
-            const Icon = categoryIcons[category]
-            return (
-              <li key={category}>
-                <Link
-                  to={`/jobs?category=${encodeURIComponent(category)}`}
-                  className="group flex h-full flex-col gap-3 rounded-2xl bg-white p-5 ring-1 ring-ink-200/80 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift hover:ring-brand-300"
-                >
-                  <span className="grid size-11 place-items-center rounded-xl bg-brand-50 text-brand-600 transition-colors group-hover:bg-brand-600 group-hover:text-white">
-                    <Icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <span className="font-display text-[0.9375rem] font-bold text-ink-900">
-                    {category}
-                  </span>
-                  <span className="mt-auto text-xs font-medium text-ink-500">
-                    {categoryCounts[category]}
-                  </span>
-                </Link>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Featured + Recently Posted Jobs
-// ---------------------------------------------------------------------------
-
-function FeaturedJobs() {
-  const featured = jobs.filter((job) => job.featured)
-  const recent = jobs.filter((job) => !job.featured).slice(0, 3)
-
-  return (
-    <section className="py-18 lg:py-22">
-      <div className="container-page">
-        <SectionHeading
-          eyebrow="Handpicked this week"
-          title="Featured roles"
-          body="Chosen because the team is strong, the band is fair and the hiring process is quick."
-          action={{ to: '/jobs', label: 'Browse all 2,400 roles' }}
-        />
-        <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {featured.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
         </div>
+      </Section>
 
-        <h3 className="mt-16 font-display text-xl font-bold">Recently posted</h3>
-        <div className="mt-5 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {recent.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// How It Works
-// ---------------------------------------------------------------------------
-
-function HowItWorks() {
-  return (
-    <section className="bg-ink-50 py-18 lg:py-22">
-      <div className="container-page">
-        <SectionHeading
-          eyebrow="How it works"
-          title="Three steps, no busywork"
-          body="You should spend your energy on the two roles that matter, not on forty applications that go nowhere."
-        />
-        <ol className="mt-10 grid gap-5 md:grid-cols-3">
-          {steps.map((step, index) => (
-            <li
-              key={step.title}
-              className="relative rounded-2xl bg-white p-6 ring-1 ring-ink-200/80"
-            >
-              <span
-                aria-hidden="true"
-                className="absolute top-6 right-6 font-display text-4xl font-extrabold text-ink-100"
-              >
-                0{index + 1}
-              </span>
-              <span className="grid size-12 place-items-center rounded-xl bg-brand-600 text-white">
-                <step.icon className="size-5.5" aria-hidden="true" />
-              </span>
-              <h3 className="mt-5 text-lg font-bold">{step.title}</h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-ink-600">{step.body}</p>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Why Mitthi Solutions — Promises
-// ---------------------------------------------------------------------------
-
-function Promises() {
-  return (
-    <section className="py-18 lg:py-22">
-      <div className="container-page grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-        <div>
-          <p className="text-xs font-bold tracking-[0.14em] text-brand-600 uppercase">
-            Why Mitthi Solutions
-          </p>
-          <h2 className="mt-2.5 text-3xl font-extrabold tracking-tight lg:text-4xl">
-            Three promises we can actually keep
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-ink-600">
-            Job boards are usually built for the employer, and it shows. We wrote our rules from
-            the candidate's side and then asked employers to agree to them.
-          </p>
-          <Button as="link" to="/about" variant="secondary" className="mt-7">
-            Read our hiring standards
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Button>
-        </div>
-
-        <ul className="grid gap-4">
-          {promises.map((promise) => (
-            <li
-              key={promise.title}
-              className="flex gap-4 rounded-2xl bg-white p-5 ring-1 ring-ink-200/80 transition-shadow hover:shadow-card sm:p-6"
-            >
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-600">
-                <promise.icon className="size-5" aria-hidden="true" />
-              </span>
-              <div>
-                <h3 className="text-base font-bold">{promise.title}</h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-ink-600">{promise.body}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Employer logo band
-// ---------------------------------------------------------------------------
-
-function Employers() {
-  return (
-    <section className="border-y border-ink-200 bg-ink-50 py-14">
-      <div className="container-page">
-        <p className="text-center text-sm font-medium text-ink-500">
-          Teams hiring on Mitthi Solutions right now
-        </p>
-        <ul className="mt-7 flex flex-wrap items-center justify-center gap-x-10 gap-y-5">
-          {Object.values(companies).map((company) => (
-            <li key={company.name} className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className={`grid size-8 place-items-center rounded-lg font-display text-[0.6875rem] font-bold ${company.tileClass}`}
-              >
-                {company.initials}
-              </span>
-              <span className="font-display text-sm font-bold text-ink-700">{company.name}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Testimonials
-// ---------------------------------------------------------------------------
-
-function Testimonials() {
-  return (
-    <section className="py-18 lg:py-22">
-      <div className="container-page">
-        <SectionHeading
-          eyebrow="From both sides"
-          title="What people tell us afterwards"
-        />
-        <ul className="mt-10 grid gap-5 md:grid-cols-3">
-          {testimonials.map((item) => (
-            <li
-              key={item.name}
-              className="flex flex-col rounded-2xl bg-white p-6 shadow-card ring-1 ring-ink-200/80"
-            >
-              <blockquote className="flex-1 text-[0.9375rem] leading-relaxed text-ink-700">
-                <p>"{item.quote}"</p>
-              </blockquote>
-              <figcaption className="mt-5 flex items-center gap-3 border-t border-ink-100 pt-4">
-                <span
-                  aria-hidden="true"
-                  className={`grid size-10 shrink-0 place-items-center rounded-full font-display text-xs font-bold ${item.tile}`}
-                >
-                  {item.initials}
-                </span>
-                <span>
-                  <span className="block text-sm font-bold text-ink-900">{item.name}</span>
-                  <span className="block text-xs text-ink-500">{item.role}</span>
-                </span>
-              </figcaption>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// Bottom CTA band — also includes "Post Requirement" and "Submit Resume" CTAs
-// ---------------------------------------------------------------------------
-
-function CallToAction({ onOpenModal }: { onOpenModal: (t: ModalType) => void }) {
-  return (
-    <section className="container-page pb-18 lg:pb-22">
-      <div className="relative overflow-hidden rounded-4xl bg-ink-950 px-6 py-14 text-center sm:px-12 lg:py-20">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(100%_100%_at_50%_0%,#1d4ed8_0%,transparent_60%)]"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-dotted text-white/[0.06]"
-        />
-        <div className="relative mx-auto max-w-2xl">
-          <h2 className="font-display text-3xl font-extrabold tracking-tight text-white lg:text-4xl">
-            Your next role is on here somewhere
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-ink-300 lg:text-lg">
-            Two thousand four hundred open roles with published salary bands. Start with a search,
-            or let hiring teams come to you.
-          </p>
-          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
-            <Button as="link" to="/jobs" size="lg">
-              Browse jobs
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </Button>
-            <button
-              type="button"
-              onClick={() => onOpenModal('requirement')}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/20 transition-all hover:bg-white/20"
-            >
-              Post a Requirement
-            </button>
-            <button
-              type="button"
-              onClick={() => onOpenModal('resume')}
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 px-7 py-3 text-sm font-semibold text-white ring-1 ring-white/20 transition-all hover:bg-white/20"
-            >
-              Submit Your Resume
-            </button>
+      {/* ════════════════════════════════════════
+          4. HOW IT WORKS
+      ════════════════════════════════════════ */}
+      <Section id="process" className="py-24 overflow-hidden"
+        style={{ background: 'linear-gradient(135deg, #162163 0%, #1e3a8a 60%, #1d4ed8 100%)' } as React.CSSProperties}>
+        <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-20" />
+        <div className="container-page relative z-10">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <SectionLabel>Our Process</SectionLabel>
+            <h2 className="text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-white">
+              How It Works
+            </h2>
+            <p className="mt-5 text-lg text-blue-200 leading-relaxed">
+              A clear, efficient process so you're never left wondering what happens next.
+            </p>
           </div>
-          <p className="mt-6 text-sm text-ink-400">
-            Free for candidates, always. No recruiter spam.
-          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {steps.map(({ number, icon: Icon, title, desc }, idx) => (
+              <div key={title} className="relative">
+                {/* Connecting line (desktop) */}
+                {idx < steps.length - 1 && (
+                  <div className="hidden lg:block absolute top-8 left-[calc(50%+2rem)] right-[-50%] h-px bg-white/15" />
+                )}
+                <div className="glass-card rounded-3xl p-7 text-center hover:bg-white/12 transition-colors duration-300">
+                  <div className="relative mx-auto mb-5 size-16 grid place-items-center rounded-2xl bg-white/15">
+                    <Icon className="size-7 text-white" />
+                    <span className="absolute -top-2 -right-2 grid size-7 place-items-center rounded-full bg-brand-600 text-white text-xs font-extrabold">
+                      {number}
+                    </span>
+                  </div>
+                  <h3 className="text-base font-bold text-white mb-2">{title}</h3>
+                  <p className="text-sm leading-relaxed text-blue-200">{desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-    </section>
-  )
-}
+      </Section>
 
-// ---------------------------------------------------------------------------
-// Page export — manages modal state at the top level
-// ---------------------------------------------------------------------------
+      {/* ════════════════════════════════════════
+          5. INDUSTRIES
+      ════════════════════════════════════════ */}
+      <Section id="industries" className="py-24 bg-white">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <SectionLabel>Industries We Serve</SectionLabel>
+            <h2 className="text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-ink-900">
+              Expertise Across Every Sector
+            </h2>
+            <p className="mt-5 text-lg text-ink-500">
+              Deep domain knowledge across the industries that matter most.
+            </p>
+          </div>
 
-export function Home() {
-  const [modal, setModal] = useState<ModalType | null>(null)
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {industries.map(({ icon: Icon, label }) => (
+              <div
+                key={label}
+                className="group flex flex-col items-center gap-3 rounded-2xl border border-ink-100 bg-ink-50 p-6 text-center hover:border-brand-300 hover:bg-brand-50 hover:shadow-card transition-all duration-300 cursor-default"
+              >
+                <div className="grid size-12 place-items-center rounded-xl bg-white shadow-sm text-brand-600 group-hover:bg-brand-600 group-hover:text-white transition-all duration-300">
+                  <Icon className="size-6" />
+                </div>
+                <span className="text-sm font-semibold text-ink-700 group-hover:text-brand-700 transition-colors">
+                  {label}
+                </span>
+              </div>
+            ))}
+          </div>
 
-  return (
-    <>
-      <Hero onOpenModal={setModal} />
-      <Stats />
-      <Categories />
-      <FeaturedJobs />
-      <HowItWorks />
-      <Promises />
-      <Employers />
-      <Testimonials />
-      <CallToAction onOpenModal={setModal} />
+          {/* Extra industry pills */}
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {['Real Estate', 'Hospitality', 'Media & Entertainment', 'Telecom', 'E-commerce', 'Insurance', 'Automotive', 'Agri & Food Tech'].map(tag => (
+              <span
+                key={tag}
+                className="px-5 py-2 rounded-full bg-ink-100 text-sm font-medium text-ink-600 hover:bg-brand-100 hover:text-brand-700 transition-colors cursor-default"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      </Section>
 
-      {modal && (
-        <LeadCaptureModal type={modal} onClose={() => setModal(null)} />
-      )}
+      {/* ════════════════════════════════════════
+          6. TESTIMONIALS
+      ════════════════════════════════════════ */}
+      <Section id="testimonials" className="py-24 bg-ink-50">
+        <div className="container-page">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <SectionLabel>Testimonials</SectionLabel>
+            <h2 className="text-4xl lg:text-5xl font-display font-extrabold tracking-tight text-ink-900">
+              What Our Clients Say
+            </h2>
+            <p className="mt-5 text-lg text-ink-500">
+              Real results from real partnerships.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-7">
+            {testimonials.map(({ quote, author, role, rating }) => (
+              <div
+                key={author}
+                className="relative bg-white rounded-3xl p-8 shadow-card ring-1 ring-ink-100 hover:shadow-lift hover:-translate-y-1 transition-all duration-300 flex flex-col"
+              >
+                {/* Stars */}
+                <div className="flex gap-1 mb-5">
+                  {Array.from({ length: rating }).map((_, i) => (
+                    <Star key={i} className="size-4 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+
+                {/* Big quote mark */}
+                <span className="absolute top-6 right-7 text-brand-100 font-display text-7xl font-extrabold leading-none select-none">
+                  "
+                </span>
+
+                <blockquote className="flex-1 text-[0.95rem] leading-relaxed text-ink-700 italic mb-7">
+                  "{quote}"
+                </blockquote>
+
+                <div className="flex items-center gap-3 border-t border-ink-100 pt-5">
+                  <div className="grid size-10 place-items-center rounded-full bg-brand-600 text-white font-bold text-sm shrink-0">
+                    {author.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-ink-900">{author}</p>
+                    <p className="text-xs text-ink-500">{role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
+      {/* ════════════════════════════════════════
+          7. CONTACT — DUAL CTA
+      ════════════════════════════════════════ */}
+      <section id="contact" className="scroll-mt-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[680px]">
+
+          {/* Left: Hire talent */}
+          <div
+            className="relative flex flex-col justify-center px-8 py-16 lg:px-16 overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #162163 0%, #1e3a8a 100%)' }}
+          >
+            <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-20" />
+            <div className="relative z-10 max-w-md mx-auto lg:mx-0 w-full">
+              <span className="inline-flex items-center gap-2 text-brand-300 text-xs font-bold tracking-widest uppercase mb-4">
+                <Briefcase className="size-4" /> For Employers
+              </span>
+              <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-white mb-3">
+                Looking to Hire?
+              </h2>
+              <p className="text-blue-200 text-sm leading-relaxed mb-8">
+                Share your requirement and receive curated, interview-ready profiles within 48 hours.
+              </p>
+
+              {hireSubmitted ? (
+                <div className="glass-card rounded-2xl p-8 text-center">
+                  <CheckCircle2 className="size-12 text-green-400 mx-auto mb-4" />
+                  <p className="text-white font-bold text-lg">Request Received!</p>
+                  <p className="text-blue-200 text-sm mt-2">We'll reach out within 24 hours.</p>
+                </div>
+              ) : (
+                <form onSubmit={submitHire} className="space-y-4">
+                  {[
+                    { label: 'Your Name', key: 'name', placeholder: 'Rajesh Sharma', type: 'text' },
+                    { label: 'Company', key: 'company', placeholder: 'Your Company Ltd.', type: 'text' },
+                    { label: 'Phone Number', key: 'phone', placeholder: '+91 98765 43210', type: 'tel' },
+                  ].map(({ label, key, placeholder, type }) => (
+                    <div key={key}>
+                      <label className="block text-xs font-semibold text-blue-300 mb-1.5 uppercase tracking-wider">
+                        {label}
+                      </label>
+                      <input
+                        type={type}
+                        required
+                        placeholder={placeholder}
+                        value={hireForm[key as keyof typeof hireForm]}
+                        onChange={e => setHireForm(prev => ({ ...prev, [key]: e.target.value }))}
+                        className="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-300 mb-1.5 uppercase tracking-wider">
+                      Job Requirement
+                    </label>
+                    <textarea
+                      required
+                      rows={3}
+                      placeholder="Role title, department, number of openings..."
+                      value={hireForm.requirement}
+                      onChange={e => setHireForm(prev => ({ ...prev, requirement: e.target.value }))}
+                      className="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 transition-all resize-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-white text-brand-950 font-bold px-6 py-4 rounded-xl text-sm hover:bg-brand-50 transition-colors shadow-lift"
+                  >
+                    Submit Requirement →
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Find a job */}
+          <div
+            id="contact-job"
+            className="relative flex flex-col justify-center px-8 py-16 lg:px-16 overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #2563eb 60%, #3b82f6 100%)' }}
+          >
+            <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-20" />
+            <div className="relative z-10 max-w-md mx-auto lg:mx-0 w-full">
+              <span className="inline-flex items-center gap-2 text-blue-200 text-xs font-bold tracking-widest uppercase mb-4">
+                <Search className="size-4" /> For Candidates
+              </span>
+              <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-white mb-3">
+                Accelerate Your Career
+              </h2>
+              <p className="text-blue-200 text-sm leading-relaxed mb-8">
+                Share your resume and our team will match you with the right opportunities from our partner companies.
+              </p>
+
+              {jobSubmitted ? (
+                <div className="bg-white/10 border border-white/20 rounded-2xl p-8 text-center">
+                  <CheckCircle2 className="size-12 text-green-300 mx-auto mb-4" />
+                  <p className="text-white font-bold text-lg">Profile Received!</p>
+                  <p className="text-blue-200 text-sm mt-2">We'll be in touch with matching opportunities.</p>
+                </div>
+              ) : (
+                <form onSubmit={submitJob} className="space-y-4">
+                  {[
+                    { label: 'Full Name', key: 'name', placeholder: 'Priya Patel', type: 'text' },
+                    { label: 'Email Address', key: 'email', placeholder: 'you@example.com', type: 'email' },
+                    { label: 'Current Role', key: 'role', placeholder: 'e.g. Software Engineer, Sales Manager', type: 'text' },
+                  ].map(({ label, key, placeholder, type }) => (
+                    <div key={key}>
+                      <label className="block text-xs font-semibold text-blue-200 mb-1.5 uppercase tracking-wider">
+                        {label}
+                      </label>
+                      <input
+                        type={type}
+                        required
+                        placeholder={placeholder}
+                        value={jobForm[key as keyof typeof jobForm]}
+                        onChange={e => setJobForm(prev => ({ ...prev, [key]: e.target.value }))}
+                        className="w-full bg-white/10 border border-white/20 text-white placeholder-white/40 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/40 transition-all"
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-xs font-semibold text-blue-200 mb-1.5 uppercase tracking-wider">
+                      Upload Resume
+                    </label>
+                    <label className="flex items-center gap-3 w-full bg-white/10 border border-dashed border-white/30 text-white rounded-xl px-4 py-3.5 text-sm cursor-pointer hover:bg-white/15 transition-colors">
+                      <Upload className="size-4 text-blue-200" />
+                      <span className="text-white/70">
+                        {jobForm.fileName || 'Choose PDF or DOCX'}
+                      </span>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        className="sr-only"
+                        onChange={e => setJobForm(prev => ({ ...prev, fileName: e.target.files?.[0]?.name ?? '' }))}
+                      />
+                    </label>
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-white text-blue-700 font-bold px-6 py-4 rounded-xl text-sm hover:bg-blue-50 transition-colors shadow-lift"
+                  >
+                    Submit My Profile →
+                  </button>
+                </form>
+              )}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════
+          8. FINAL CTA BAND
+      ════════════════════════════════════════ */}
+      <Section className="py-20 bg-white">
+        <div className="container-page">
+          <div className="rounded-4xl overflow-hidden relative"
+            style={{ background: 'linear-gradient(135deg, #162163, #2563eb)' }}>
+            <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-25" />
+            <div className="relative z-10 text-center px-8 py-16 lg:py-20">
+              <h2 className="text-3xl lg:text-4xl font-display font-extrabold text-white mb-4">
+                Let's Build Something Great Together
+              </h2>
+              <p className="text-blue-200 text-lg max-w-xl mx-auto mb-10">
+                Whether you're scaling a team or searching for the next chapter in your career —
+                Mitthi Solutions is your partner every step of the way.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a
+                  href="tel:+919545412385"
+                  className="inline-flex items-center gap-2.5 bg-white text-brand-700 px-8 py-4 rounded-2xl text-base font-bold shadow-lift hover:-translate-y-0.5 transition-all duration-300"
+                >
+                  <Phone className="size-5" />
+                  Call Us Now
+                </a>
+                <a
+                  href="mailto:info@mitthisolutions.com"
+                  className="inline-flex items-center gap-2.5 glass-card text-white px-8 py-4 rounded-2xl text-base font-bold hover:bg-white/15 transition-all duration-300"
+                >
+                  <Mail className="size-5" />
+                  Send an Email
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Section>
     </>
   )
 }
