@@ -5,6 +5,7 @@ import {
   HeartHandshake, TrendingUp, Phone, Mail, Upload,
   ChevronDown, Building2, GraduationCap, Factory,
   ShoppingBag, Stethoscope, Landmark, Truck, ChevronRight,
+  Calendar, MonitorSmartphone,
 } from 'lucide-react'
 
 /* ─── Tiny hook: fires a one-shot callback when element enters viewport ─── */
@@ -169,7 +170,15 @@ export function Home() {
   const [jobForm, setJobForm] = useState({ name: '', email: '', role: '', fileName: '' })
   const [hireSubmitted, setHireSubmitted] = useState(false)
   const [jobSubmitted, setJobSubmitted] = useState(false)
-  const heroRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  /* Respect prefers-reduced-motion: pause autoplay if user prefers less motion */
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    if (mq.matches && videoRef.current) {
+      videoRef.current.pause()
+    }
+  }, [])
 
   const submitHire = (e: FormEvent) => {
     e.preventDefault()
@@ -183,84 +192,180 @@ export function Home() {
   return (
     <>
       {/* ════════════════════════════════════════
-          1. HERO
+          1. HERO — full-width video background
       ════════════════════════════════════════ */}
-      <div
-        ref={heroRef}
-        className="relative min-h-screen flex flex-col justify-center overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #162163 0%, #1e3a8a 40%, #1d4ed8 75%, #2563eb 100%)' }}
-      >
-        {/* Dot texture */}
-        <div className="pointer-events-none absolute inset-0 bg-dot-grid opacity-30" />
+      <div className="relative min-h-screen flex flex-col justify-center overflow-hidden">
 
-        {/* Glow blobs */}
-        <div className="pointer-events-none absolute inset-0">
-          <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-brand-600/20 blur-[120px]" />
-          <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-400/15 blur-[100px]" />
+        {/* ── Layer 0: Static poster — eager loaded, prevents layout shift ── */}
+        <div className="absolute inset-0 z-0" aria-hidden="true">
+          <img
+            src="/hero-poster.jpg"
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            className="w-full h-full object-cover"
+          />
         </div>
 
-        <div className="container-page relative z-10 pt-48 pb-24">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Label */}
-            <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <span className="inline-flex items-center gap-2.5 glass-card text-blue-200 text-xs font-bold tracking-widest uppercase px-5 py-2 rounded-full mb-8">
-                <span className="size-2 rounded-full bg-brand-400 animate-pulse-slow" />
-                Trusted Recruitment Partner · Surat, India
-              </span>
-            </div>
+        {/* ── Layer 1: Background video (GPU-accelerated) ── */}
+        {/*
+          To activate: place a video file at /public/hero-bg.mp4 (or .webm).
+          The poster image displays instantly; the video plays over it once ready.
+        */}
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-hidden="true"
+          poster="/hero-poster.jpg"
+          preload="none"
+          className="absolute inset-0 z-[1] w-full h-full object-cover"
+          style={{ willChange: 'transform', transform: 'translateZ(0)' }}
+        >
+          <source src="/hero-bg.webm" type="video/webm" />
+          <source src="/hero-bg.mp4" type="video/mp4" />
+        </video>
 
-            {/* Headline */}
-            <h1
-              className="animate-fade-up text-white font-display font-extrabold tracking-tight leading-[1.1]"
-              style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', animationDelay: '0.2s' }}
-            >
-              Building Great Teams,
-              <br />
-              <span className="text-transparent bg-clip-text"
-                style={{ backgroundImage: 'linear-gradient(90deg, #93c5fd, #60a5fa, #bfdbfe)' }}>
-                Shaping Great Careers
-              </span>
-            </h1>
+        {/* ── Layer 2: Dark overlay 45% — WCAG contrast for white text ── */}
+        <div
+          className="absolute inset-0 z-[2]"
+          aria-hidden="true"
+          style={{ background: 'rgba(6, 12, 38, 0.72)' }}
+        />
 
-            {/* Subheading */}
-            <p
-              className="animate-fade-up mt-7 text-blue-200/90 leading-relaxed max-w-2xl mx-auto"
-              style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)', animationDelay: '0.35s' }}
-            >
-              Mitthi Solutions connects exceptional talent with leading organisations
-              across India — with speed, precision, and care that sets us apart.
-            </p>
+        {/* ── Layer 3: Brand gradient overlay ── */}
+        <div
+          className="absolute inset-0 z-[3]"
+          aria-hidden="true"
+          style={{
+            background:
+              'linear-gradient(135deg, rgba(22,33,99,0.65) 0%, rgba(29,78,216,0.30) 50%, rgba(6,12,38,0.55) 100%)',
+          }}
+        />
 
-            {/* CTAs */}
+        {/* ── Layer 4: Subtle animated glow blobs ── */}
+        <div className="pointer-events-none absolute inset-0 z-[4] overflow-hidden" aria-hidden="true">
+          <div
+            className="absolute -top-1/4 -left-1/4 w-[60vw] h-[60vw] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(37,99,235,0.18) 0%, transparent 65%)',
+              animation: 'pulse-slow 5s ease-in-out infinite',
+            }}
+          />
+          <div
+            className="absolute -bottom-1/4 -right-1/4 w-[50vw] h-[50vw] rounded-full"
+            style={{
+              background: 'radial-gradient(circle, rgba(96,165,250,0.12) 0%, transparent 65%)',
+              animation: 'pulse-slow 7s ease-in-out infinite reverse',
+            }}
+          />
+        </div>
+
+        {/* ── Layer 10: Hero content ── */}
+        <div className="relative z-10 container-page pt-52 pb-16">
+          <div className="max-w-4xl mx-auto text-center">
+
+            {/* Glassmorphism card */}
             <div
-              className="animate-fade-up mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
-              style={{ animationDelay: '0.5s' }}
+              className="rounded-3xl px-8 py-12 sm:px-14 sm:py-16"
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255,255,255,0.13)',
+                boxShadow: '0 8px 48px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.10)',
+              }}
             >
-              <button
-                onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
-                className="group inline-flex items-center gap-2.5 bg-white text-brand-950 px-8 py-4 rounded-2xl text-base font-bold shadow-lift hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
-              >
-                <Briefcase className="size-5" />
-                I'm Looking to Hire
-                <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
-              </button>
-              <button
-                onClick={() => document.querySelector('#contact-job')?.scrollIntoView({ behavior: 'smooth' })}
-                className="group inline-flex items-center gap-2.5 glass-card text-white px-8 py-4 rounded-2xl text-base font-bold hover:bg-white/15 transition-all duration-300"
-              >
-                <Search className="size-5" />
-                I Need a Job
-                <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
-              </button>
-            </div>
+              {/* Eyebrow */}
+              <div style={{ animation: 'heroReveal 0.9s cubic-bezier(0.16,1,0.3,1) 0.1s both' }}>
+                <span className="inline-flex items-center gap-2.5 bg-brand-600/25 text-brand-200 border border-brand-400/30 text-xs font-bold tracking-widest uppercase px-5 py-2 rounded-full mb-8">
+                  <span className="size-2 rounded-full bg-brand-400 animate-pulse-slow" />
+                  IT Recruitment & Managed Services · Surat, India
+                </span>
+              </div>
 
-            {/* Scroll cue */}
-            <div className="animate-float mt-16 flex justify-center">
-              <div className="flex flex-col items-center gap-2 text-white/40">
-                <span className="text-xs tracking-widest uppercase">Scroll</span>
-                <ChevronDown className="size-5" />
+              {/* Headline */}
+              <h1
+                className="font-display font-extrabold text-white tracking-tight leading-[1.12]"
+                style={{
+                  fontSize: 'clamp(1.9rem, 5vw, 3.75rem)',
+                  animation: 'heroReveal 1s cubic-bezier(0.16,1,0.3,1) 0.25s both',
+                }}
+              >
+                Serving Excellence Through{' '}
+                <span
+                  className="text-transparent bg-clip-text"
+                  style={{
+                    backgroundImage: 'linear-gradient(90deg, #93c5fd 0%, #60a5fa 50%, #bfdbfe 100%)',
+                  }}
+                >
+                  People, Technology &amp; Growth
+                </span>
+              </h1>
+
+              {/* Subheadline */}
+              <p
+                className="mt-6 leading-relaxed max-w-3xl mx-auto"
+                style={{
+                  color: 'rgba(219,234,254,0.88)',
+                  fontSize: 'clamp(0.95rem, 1.8vw, 1.15rem)',
+                  animation: 'heroReveal 1s cubic-bezier(0.16,1,0.3,1) 0.55s both',
+                }}
+              >
+                Mitthi Solutions empowers organizations with{' '}
+                <strong className="text-white/95 font-semibold">IT Recruitment</strong>,{' '}
+                <strong className="text-white/95 font-semibold">Managed IT Services</strong>,{' '}
+                <strong className="text-white/95 font-semibold">Technology Consulting</strong>,{' '}
+                <strong className="text-white/95 font-semibold">Service Desk Operations</strong>,{' '}
+                <strong className="text-white/95 font-semibold">NOC Support</strong>, and{' '}
+                <strong className="text-white/95 font-semibold">Professional Training</strong>.
+              </p>
+
+              {/* CTA Buttons */}
+              <div
+                className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+                style={{ animation: 'heroReveal 1s cubic-bezier(0.16,1,0.3,1) 0.85s both' }}
+              >
+                {/* Primary CTA */}
+                <button
+                  onClick={() => document.querySelector('#contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="group inline-flex items-center gap-2.5 bg-brand-600 hover:bg-brand-500 text-white px-9 py-4 rounded-2xl text-base font-bold transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  style={{ boxShadow: '0 8px 32px rgba(37,99,235,0.55)' }}
+                >
+                  <Calendar className="size-5 shrink-0" />
+                  Book a Consultation
+                </button>
+
+                {/* Secondary CTA */}
+                <button
+                  onClick={() => document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="group inline-flex items-center gap-2.5 text-white px-9 py-4 rounded-2xl text-base font-bold transition-all duration-300 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white"
+                  style={{
+                    border: '1.5px solid rgba(255,255,255,0.35)',
+                    background: 'rgba(255,255,255,0.09)',
+                    backdropFilter: 'blur(8px)',
+                  }}
+                >
+                  <MonitorSmartphone className="size-5 shrink-0" />
+                  Explore Our Services
+                  <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+                </button>
               </div>
             </div>
+          </div>
+
+          {/* Scroll cue */}
+          <div className="mt-12 flex justify-center" style={{ animation: 'heroReveal 1s ease 1.2s both' }}>
+            <button
+              onClick={() => document.querySelector('#services')?.scrollIntoView({ behavior: 'smooth' })}
+              aria-label="Scroll to services"
+              className="flex flex-col items-center gap-2 text-white/40 hover:text-white/70 transition-colors"
+            >
+              <span className="text-xs tracking-widest uppercase">Scroll</span>
+              <ChevronDown className="size-5 animate-float" />
+            </button>
           </div>
         </div>
 
