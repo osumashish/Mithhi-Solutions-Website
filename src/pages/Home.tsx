@@ -199,7 +199,7 @@ export function Home() {
           <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-400/15 blur-[100px]" />
         </div>
 
-        <div className="container-page relative z-10 pt-32 pb-24">
+        <div className="container-page relative z-10 pt-48 pb-24">
           <div className="max-w-3xl mx-auto text-center">
             {/* Label */}
             <div className="animate-fade-in" style={{ animationDelay: '0.1s' }}>

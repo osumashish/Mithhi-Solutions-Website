@@ -38,23 +38,14 @@ export function Footer() {
             <a
               href="#"
               onClick={e => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
-              className="group inline-flex items-center gap-3"
+              className="group inline-block transition-transform duration-300 hover:scale-105"
             >
+              {/* Full logo — inverted to white for dark navy footer */}
               <img
-                src="/mitthi-logo-mark.jpg"
-                alt=""
-                aria-hidden="true"
-                className="h-11 w-11 rounded-xl object-contain bg-white/10 p-0.5"
+                src="/mitthi-logo.png"
+                alt="Mitthi Solutions"
+                className="h-14 w-auto object-contain brightness-0 invert"
               />
-              <span className="flex flex-col leading-tight">
-                <span className="flex items-baseline gap-1">
-                  <span className="font-display text-[1.05rem] font-extrabold tracking-tight text-white">mitthi</span>
-                  <span className="font-display text-[1.05rem] font-extrabold tracking-tight text-brand-300">solutions</span>
-                </span>
-                <span className="text-[0.5rem] font-semibold tracking-[0.2em] uppercase text-white/50">
-                  — Serving Excellence —
-                </span>
-              </span>
             </a>
             <p className="mt-5 text-sm leading-relaxed text-white/65 max-w-xs">
               Your trusted recruitment partner — connecting exceptional talent with

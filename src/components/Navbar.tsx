@@ -34,7 +34,7 @@ export function Navbar() {
       }`}
     >
       <div className="container-page">
-        <div className="flex items-center justify-between h-18 lg:h-20">
+        <div className="flex items-center justify-between h-36 lg:h-40">
           {/* Logo */}
           <a
             href="#"
@@ -46,7 +46,7 @@ export function Navbar() {
             <img
               src="/mitthi-logo.png"
               alt="Mitthi Solutions"
-              className={`h-12 w-auto object-contain transition-all duration-300 ${
+              className={`h-36 w-auto object-contain transition-all duration-300 ${
                 scrolled ? 'brightness-100' : 'brightness-0 invert'
               }`}
             />
