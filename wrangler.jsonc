@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "mithhi-solutions-website",
+  "name": "mithhi-solutions",
   "compatibility_date": "2026-07-25",
   // Static-assets-only Worker: no "main" entry, Cloudflare just serves ./dist.
   "assets": {
